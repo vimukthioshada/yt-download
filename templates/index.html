@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT Stream | Free 4K YouTube Video Downloader</title>
+    <meta name="description" content="Download YouTube videos in MP4, MP3, 4K, and 1080p for free. The fastest and most secure YT downloader. No registration required.">
+    <meta name="keywords" content="youtube downloader, yt video download, 4k downloader, mp3 converter, free video saver, yt stream">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="http://127.0.0.1:5000/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://127.0.0.1:5000/">
+    <meta property="og:title" content="YT Stream | Free 4K YouTube Video Downloader">
+    <meta property="og:description" content="Download YouTube videos in MP4, MP3, 4K, and 1080p for free. Fast, secure, and unlimited.">
+    <meta property="og:image" content="http://127.0.0.1:5000/static/logo.png">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "YT Stream Downloader",
+      "operatingSystem": "Web",
+      "applicationCategory": "MultimediaApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #0f172a;
+            overflow-x: hidden;
+        }
+
+        /* Dynamic Background */
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #0f172a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25); 
+        }
+
+        /* Blobs */
+        .blob {
+            position: absolute;
+            background: linear-gradient(180deg, rgba(255,0,128,0.4) 0%, rgba(100,0,255,0.4) 100%);
+            filter: blur(80px);
+            border-radius: 50%;
+            z-index: -1;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -50px) scale(1.1); }
+        }
+
+    </style>
+</head>
+<body class="text-white min-h-screen flex items-center justify-center p-4">
+
+    <!-- Background Elements -->
+    <div class="gradient-bg"></div>
+    <div class="blob w-96 h-96 top-0 left-0 opacity-50"></div>
+    <div class="blob w-80 h-80 bottom-0 right-0 bg-blue-500 opacity-40"></div>
+
+    <div class="container max-w-4xl mx-auto flex flex-col min-h-screen py-10">
+        
+        <!-- Pinned Message -->
+        {% if settings['pinned_msg'] %}
+        <div class="glass-panel rounded-2xl p-4 mb-8 text-center animate-bounce-slow">
+            <p class="text-blue-200 font-medium">📌 {{ settings['pinned_msg'] }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Ad Code 1 (Top) -->
+        {% if settings['ad_code_1'] %}
+        <div class="mb-8 text-center">
+            {{ settings['ad_code_1'] | safe }}
+        </div>
+        {% endif %}
+
+        <!-- Main Card -->
+        <div class="glass-panel rounded-[3rem] p-8 md:p-12 relative overflow-hidden transition-all duration-500 mb-8">
+            
+            <!-- Header -->
+            <div class="text-center mb-10 relative z-10">
+                <div class="flex justify-center mb-6">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="YT Stream Logo" class="h-32 md:h-40 drop-shadow-[0_0_25px_rgba(79,70,229,0.5)] animate-float-slow">
+                </div>
+                <!-- <h1 class="text-5xl md:text-6xl font-bold ...">YT Stream</h1> (Removed for logo) -->
+                <p class="text-gray-400 text-lg font-light tracking-wide">Premium Video & Audio Downloader</p>
+            </div>
+
+            <!-- Input Area -->
+            <div class="relative max-w-2xl mx-auto mb-12 group z-10">
+                <div class="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full blur opacity-25 group-hover:opacity-60 transition duration-500"></div>
+                <div class="relative flex bg-black/40 rounded-full p-2 border border-white/10 backdrop-blur-sm">
+                    <input type="text" id="videoUrl" 
+                        placeholder="Paste YouTube Link..." 
+                        class="w-full bg-transparent text-white px-6 py-3 rounded-full focus:outline-none placeholder-gray-500 font-light text-lg">
+                    <button onclick="fetchInfo()" id="btnText" 
+                        class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-indigo-500/30 transform hover:scale-105 active:scale-95 whitespace-nowrap">
+                        Get Video
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="result" class="hidden transition-all duration-500 animate-fade-in-up">
+                <div class="flex flex-col lg:flex-row gap-8 items-start">
+                    
+                    <!-- Left: Metadata -->
+                    <div class="w-full lg:w-1/3 space-y-4">
+                        <div class="relative group rounded-3xl overflow-hidden glass-panel border-0 p-2">
+                            <img id="thumb" src="" alt="Thumbnail" class="w-full rounded-2xl shadow-2xl transform group-hover:scale-105 transition duration-500">
+                        </div>
+                        <h2 id="title" class="text-xl font-semibold text-white/90 leading-snug px-2"></h2>
+                    </div>
+                    
+                    <!-- Right: Downloads -->
+                    <div class="w-full lg:w-2/3">
+                        <!-- Custom Tabs -->
+                        <div class="flex p-1 bg-black/20 rounded-full mb-6 relative">
+                            <div id="tab-indicator" class="absolute h-[calc(100%-8px)] top-1 left-1 bg-white/10 backdrop-blur-md rounded-full transition-all duration-300 ease-out z-0"></div>
+                            
+                            <button onclick="switchTab(this, 'audio')" class="tab-btn w-1/3 relative z-10 py-2.5 text-sm font-medium rounded-full transition-colors duration-200 text-white active-tab">Audio</button>
+                            <button onclick="switchTab(this, 'video')" class="tab-btn w-1/3 relative z-10 py-2.5 text-sm font-medium rounded-full transition-colors duration-200 text-gray-400 hover:text-white">Video</button>
+                            <button onclick="switchTab(this, 'other')" class="tab-btn w-1/3 relative z-10 py-2.5 text-sm font-medium rounded-full transition-colors duration-200 text-gray-400 hover:text-white">Other</button>
+                        </div>
+
+                        <!-- Content Area -->
+                        <div class="glass-panel rounded-3xl p-1 min-h-[300px]">
+                            <div class="max-h-[400px] overflow-y-auto p-4 custom-scrollbar">
+                                <div id="content-audio" class="tab-content space-y-2"></div>
+                                <div id="content-video" class="tab-content hidden space-y-2"></div>
+                                <div id="content-other" class="tab-content hidden space-y-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer area -->
+            <div class="mt-12 text-center">
+                 <div class="inline-block px-6 py-2 rounded-full border border-white/5 bg-white/5 text-gray-400 text-sm">
+                    🚀 Fast & Secure Downloads
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Ad Code 2 (Bottom) -->
+        {% if settings['ad_code_2'] %}
+        <div class="mt-auto text-center">
+            {{ settings['ad_code_2'] | safe }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Popup Modal -->
+    {% if settings['popup_msg'] %}
+    <div id="promoPopup" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 relative transform transition-all scale-100 animate-fade-in-up border border-indigo-500/30 shadow-2xl shadow-indigo-500/20">
+            <button onclick="closePopup()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-500/20 text-indigo-300 mb-4 animate-pulse">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Notice</h3>
+                <div class="text-gray-300 mb-6">
+                    {{ settings['popup_msg'] | safe }}
+                </div>
+                <button onclick="closePopup()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl transition shadow-lg hover:shadow-indigo-500/30">
+                    Got it
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        // Popup Modal Logic
+        window.addEventListener('scroll', () => {
+            const popup = document.getElementById('promoPopup');
+            if (popup && !sessionStorage.getItem('popupShown')) {
+                popup.classList.remove('hidden');
+                popup.classList.add('flex');
+                sessionStorage.setItem('popupShown', 'true');
+            }
+        });
+        
+        // Show immediately if configured (alternative to scroll)
+        window.onload = function() {
+            const popup = document.getElementById('promoPopup');
+            if (popup && "{{ settings['popup_msg'] }}" !== "") {
+                 setTimeout(() => {
+                    popup.classList.remove('hidden');
+                    popup.classList.add('flex');
+                 }, 2000); // Show after 2 seconds
+            }
+        };
+
+        function closePopup() {
+            const popup = document.getElementById('promoPopup');
+            popup.classList.add('opacity-0');
+            setTimeout(() => {
+                popup.classList.add('hidden');
+                popup.classList.remove('flex');
+            }, 300);
+        }
+
+        let currentData = {};
+
+        async function fetchInfo() {
+            const url = document.getElementById('videoUrl').value;
+            const btn = document.getElementById('btnText');
+            const resultDiv = document.getElementById('result');
+            
+            if(!url) {
+                // Shake animation for input
+                const inputContainer = document.querySelector('.group');
+                inputContainer.classList.add('animate-pulse');
+                setTimeout(() => inputContainer.classList.remove('animate-pulse'), 500);
+                return;
+            }
+
+            btn.innerHTML = '<span class="animate-pulse">Loading...</span>';
+            resultDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('/get_info', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: url})
+                });
+                const data = await response.json();
+
+                if(data.error) throw data.error;
+
+                document.getElementById('thumb').src = data.thumbnail;
+                document.getElementById('title').innerText = data.title;
+                
+                currentData = data.formats;
+                
+                renderList('audio', currentData.audio);
+                renderList('video', currentData.video);
+                renderList('other', currentData.other);
+
+                // Reset Tabs
+                const firstTabBtn = document.querySelector('.tab-btn');
+                switchTab(firstTabBtn, 'audio');
+                
+                // Smart auto-verify for content
+                if (currentData.video.length > 0 && currentData.audio.length === 0) {
+                     switchTab(document.querySelectorAll('.tab-btn')[1], 'video');
+                }
+
+                resultDiv.classList.remove('hidden');
+            } catch (err) {
+                alert("Error: " + err);
+            } finally {
+                btn.innerText = "Get Video";
+            }
+        }
+
+        function renderList(type, items) {
+            const container = document.getElementById(`content-${type}`);
+            container.innerHTML = '';
+            
+            if (!items || items.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-400 opacity-50">
+                        <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p>No formats available</p>
+                    </div>`;
+                return;
+            }
+
+            items.forEach(item => {
+                let badge = '';
+                let icon = '';
+                
+                if (type === 'audio') {
+                    icon = '🎵';
+                } else if (type === 'video') {
+                     icon = '🎬';
+                     if (item.note && item.note.includes('No Sound')) {
+                         badge = '<span class="px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 text-[10px] font-bold tracking-wider uppercase border border-yellow-500/30">No Sound</span>';
+                     } else {
+                         badge = '<span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-300 text-[10px] font-bold tracking-wider uppercase border border-green-500/30">Has Sound</span>';
+                     }
+                } else {
+                    icon = '📁';
+                }
+
+                const row = document.createElement('div');
+                row.className = "group flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/5";
+                row.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-lg shadow-inner text-white/80">
+                            ${icon}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-white">${item.quality}</span>
+                                ${badge}
+                            </div>
+                            <div class="text-xs text-gray-400 mt-0.5 uppercase tracking-wide flex gap-2">
+                                <span class="bg-white/5 px-1.5 rounded">${item.ext}</span>
+                                <span class="opacity-50">•</span>
+                                <span>${item.filesize !== 'N/A' ? item.filesize + ' MB' : 'Size unknown'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/proxy_download?url=${encodeURIComponent(item.url)}&title=${encodeURIComponent(document.getElementById('title').innerText)}&ext=${item.ext}" 
+                       target="_blank" 
+                       class="opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 bg-white text-black px-5 py-2 rounded-full text-sm font-bold hover:bg-gray-200 shadow-lg hover:shadow-white/20">
+                        Download
+                    </a>
+                `;
+                container.appendChild(row);
+
+                // Small delay animation for list items
+                setTimeout(() => {
+                    const btn = row.querySelector('a');
+                    btn.classList.remove('opacity-0', 'translate-x-4');
+                    btn.classList.add('opacity-80', 'translate-x-0'); // Mobile friendly default
+                }, 100);
+            });
+        }
+
+        function switchTab(btn, tabName) {
+            // Content switching
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+
+            // Button styling
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('text-white', 'active-tab');
+                el.classList.add('text-gray-400');
+            });
+            btn.classList.remove('text-gray-400');
+            btn.classList.add('text-white', 'active-tab');
+
+            // Move indicator
+            const indicator = document.getElementById('tab-indicator');
+            const allBtns = Array.from(document.querySelectorAll('.tab-btn'));
+            const index = allBtns.indexOf(btn);
+            indicator.style.transform = `translateX(${index * 100}%)`;
+            
+            // Adjust indicator width if buttons have different widths (here they are w-1/3 so it's consistent)
+        }
+    </script>
+</body>
+</html>
